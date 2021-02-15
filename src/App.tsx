@@ -36,7 +36,7 @@ const App = () => {
   };
 
   const generate = (element: ReactElement) => {
-    return [0, 1, 2, 4, 5 ,6 ].map((value) =>
+    return [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ].map((value) =>
       cloneElement(element, { key: value }),
     );
   }
