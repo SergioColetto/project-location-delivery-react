@@ -4,10 +4,10 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Menu from '@material-ui/core/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-import MailIcon from '@material-ui/icons/Mail';
 
 import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
+import MapIcon from '@material-ui/icons/Map';
 
 import { useState, cloneElement, ReactElement } from 'react';
 import { green } from '@material-ui/core/colors';
@@ -24,40 +24,48 @@ import {
   ListItemSecondaryAction
 } from '@material-ui/core';
 
+interface Address {
+  line_01: string;
+  postcode: string;
+  town: string;
+}
 
 const App = () => {
   const classes = useStyles();
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   const [counter, setCounter] = useState(0);
+  const [searchPostcode, setSearchPostcode] = useState('');
+  const [addresses, setAddresses] = useState<Address[]>([]);
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
   };
 
-  const generate = (element: ReactElement) => {
-    return [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ].map((value) =>
-      cloneElement(element, { key: value }),
-    );
-  }
-
   return (
     <div className={classes.grow}>
       <AppBar position="static">
         <Toolbar>
-          
-
+      
           <div className={classes.search}>
-
-            <InputBase placeholder="Search Postcode" />
-            <IconButton edge="end" className={classes.iconButton} aria-label="search">
+            <div className={classes.searchIcon} >
               <SearchIcon />
-            </IconButton>
+            </div>
+
+            <InputBase
+              placeholder="Search Postcode"
+              classes={{
+                root: classes.inputRoot,
+                input: classes.inputInput,
+              }}
+              value={searchPostcode}
+            />
 
           </div>
+
           <IconButton aria-label="show 4 new mails" color="inherit">
             <Badge badgeContent={counter} showZero color="secondary">
-              <NavigationIcon />
+              <MapIcon />
             </Badge>
           </IconButton>
 
@@ -69,7 +77,7 @@ const App = () => {
 
 
       <List className={classes.list}>
-        { generate(
+        { addresses.map( address => 
           <ListItem>
             <ListItemAvatar>
               <Avatar>
@@ -77,8 +85,8 @@ const App = () => {
               </Avatar>
             </ListItemAvatar>
             <ListItemText
-              primary="8 Essex Walk"
-              secondary='SN3 3EY | Swindon UK'
+              primary={address.line_01}
+              secondary={`${address.postcode} | ${address.town} UK`}
             />
             <ListItemSecondaryAction>
               <IconButton edge="end" onClick={() => setCounter(counter+1)}>
@@ -126,8 +134,31 @@ const useStyles = makeStyles((theme: Theme) =>
     list: {
       padding: theme.spacing(2),
       textAlign: 'center',
-      // maxWidth: 752,
-    }
+    },
+
+    searchIcon: {
+      padding: theme.spacing(0, 2),
+      height: '100%',
+      position: 'absolute',
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputRoot: {
+      color: 'inherit',
+    },
+    inputInput: {
+      padding: theme.spacing(1, 1, 1, 0),
+      // vertical padding + font size from searchIcon
+      paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('md')]: {
+        width: '20ch',
+      },
+    },
+
   }),
 );
 
