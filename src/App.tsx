@@ -9,44 +9,83 @@ import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
 import MapIcon from '@material-ui/icons/Map';
 
-import { useState, cloneElement, ReactElement } from 'react';
-import { green } from '@material-ui/core/colors';
+import { useState } from 'react';
+import { green, red } from '@material-ui/core/colors';
 
 import {
-  Badge, 
-  InputBase, 
-  List, 
-  ListItem, 
-  ListItemAvatar, 
-  Avatar, 
-  ListItemText, 
+  Badge,
+  InputBase,
+  List,
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText,
   IconButton,
   ListItemSecondaryAction
 } from '@material-ui/core';
 
 interface Address {
-  line_01: string;
-  postcode: string;
-  town: string;
+  building_name: string;
+  building_number: string;
+  country: string; //'England'
+  county: string; //'Wiltshire'
+  district: string; //'Swindon'
+  latitude: number; //51.5626345
+  line_1: string; //'1 Essex Walk'
+  line_2: string; //''
+  line_3: string; //''
+  longitude: number; //-1.7597763
+  post_town: string; //'SWINDON';
+  postcode: string; //'SWINDON';
 }
 
 const App = () => {
   const classes = useStyles();
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  const [counter, setCounter] = useState(0);
+  const [colorCircle, setColorCircle] = useState({ color: '#4caf50' });
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [route, setRoute] = useState<Address[]>([]);
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
   };
 
+  const api = async (event: any) => {
+    if (event.key === 'Enter') {
+
+      const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${searchPostcode}?api_key=iddqd`)
+      const listAddress = await data.json()
+      if (!listAddress.result) {
+        setAddresses([])
+        return
+      }
+      setAddresses(listAddress.result)
+    }
+
+    // fetch(`http://location.delivery/${searchPostcode}`, {
+    //   method: 'POST',
+    //   body: JSON.stringify(addresses)
+    // })
+  }
+
+  const routeGenerator = () => {
+    const locationsBuild: string[] = [];
+    route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
+    locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
+
+    const allLocations = locationsBuild.join("/")
+
+    var link = `https://www.google.com/maps/dir/${allLocations}`
+    window.open(link, "_blank")
+  }
+
   return (
     <div className={classes.grow}>
       <AppBar position="static">
         <Toolbar>
-      
+
           <div className={classes.search}>
             <div className={classes.searchIcon} >
               <SearchIcon />
@@ -59,12 +98,20 @@ const App = () => {
                 input: classes.inputInput,
               }}
               value={searchPostcode}
+              onChange={(e) => setSearchPostcode(e.target.value)}
+              onKeyUp={api}
             />
 
           </div>
 
-          <IconButton aria-label="show 4 new mails" color="inherit">
-            <Badge badgeContent={counter} showZero color="secondary">
+          <IconButton
+            onClick={routeGenerator}
+            aria-label="show 4 new mails" color="inherit">
+            <Badge
+              badgeContent={route.length}
+              showZero
+              color="secondary"
+            >
               <MapIcon />
             </Badge>
           </IconButton>
@@ -77,20 +124,24 @@ const App = () => {
 
 
       <List className={classes.list}>
-        { addresses.map( address => 
+        {addresses.map((address, index) =>
           <ListItem>
-            <ListItemAvatar>
-              <Avatar>
-                <NavigationIcon />
-              </Avatar>
-            </ListItemAvatar>
+
+            <IconButton href={`https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`} >
+              <NavigationIcon fontSize="large" />
+            </IconButton>
+
             <ListItemText
-              primary={address.line_01}
-              secondary={`${address.postcode} | ${address.town} UK`}
+              primary={address.line_1}
+              secondary={`${address.postcode} | ${address.district} UK`}
             />
             <ListItemSecondaryAction>
-              <IconButton edge="end" onClick={() => setCounter(counter+1)}>
-                <AddCircle style={{ color: green[500] }} />
+              <IconButton edge="end"
+                onClick={() => {
+                  setRoute([...route, address]);
+                  setColorCircle({ color: '#4caf50' })
+                }}>
+                <AddCircle style={colorCircle} />
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>,
@@ -108,7 +159,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     search: {
       padding: '2px 4px',
-      
+
       position: 'relative',
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
