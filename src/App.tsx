@@ -6,6 +6,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
 import MapIcon from '@material-ui/icons/Map';
+import MuiAlert from '@material-ui/lab/Alert';
 import { useState } from 'react';
 
 import { isValid } from "postcode";
@@ -18,7 +19,7 @@ import {
   Container,
   ListItemText,
   IconButton,
-  ListItemSecondaryAction,
+  Snackbar,
   Tooltip
 } from '@material-ui/core';
 
@@ -37,12 +38,18 @@ interface Address {
   postcode: string; //'SWINDON';
 }
 
+
 const App = () => {
   const classes = useStyles();
   const [colorCircle, setColorCircle] = useState({ color: '#75C9A8' });
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [route, setRoute] = useState<Address[]>([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    vertical: 'top',
+    horizontal: 'center',
+  });
 
   const api = async () => {
     if (isValid(searchPostcode)){
@@ -78,6 +85,10 @@ const App = () => {
   const mapFromAddress = (address: Address) => {
     const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
     window.open(link, "_blank")
+  }
+
+  const handleClose = () => {
+    setSnackbar({...snackbar, open: false})
   }
 
   return (
@@ -136,10 +147,10 @@ const App = () => {
                 secondary={`${address.postcode} | ${address.district} UK`} />
 
               <Tooltip title="Add address in route">
-                <IconButton edge="end" style={colorCircle}
+                <IconButton edge="end"
                   onClick={() => {
-                    setRoute([...route, address]);
-                    setColorCircle({ color: '#FFADA0' })
+                    setRoute([...route, address])
+                    setSnackbar({...snackbar, open: true})
                   }}>
                   <AddCircle />
                 </IconButton>
@@ -148,8 +159,16 @@ const App = () => {
 
             </ListItem>,
           )}
-
+ 
         </List>
+
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} 
+          open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
+          <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
+            Address added in routes
+          </MuiAlert>
+        </Snackbar>
+
       </Container>
 
       
