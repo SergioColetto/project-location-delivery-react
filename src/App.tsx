@@ -9,7 +9,7 @@ import MapIcon from '@material-ui/icons/Map';
 import MuiAlert from '@material-ui/lab/Alert';
 import { useState } from 'react';
 
-import { isValid } from "postcode";
+import { isValid, toNormalised } from "postcode";
 
 import {
   Badge,
@@ -26,22 +26,21 @@ import {
 interface Address {
   building_name: string;
   building_number: string;
-  country: string; //'England'
-  county: string; //'Wiltshire'
-  district: string; //'Swindon'
-  latitude: number; //51.5626345
-  line_1: string; //'1 Essex Walk'
-  line_2: string; //''
-  line_3: string; //''
-  longitude: number; //-1.7597763
-  post_town: string; //'SWINDON';
-  postcode: string; //'SWINDON';
+  country: string;
+  county: string;
+  district: string;
+  latitude: number;
+  line_1: string;
+  line_2: string;
+  line_3: string;
+  longitude: number;
+  post_town: string;
+  postcode: string;
 }
 
 
 const App = () => {
   const classes = useStyles();
-  const [colorCircle, setColorCircle] = useState({ color: '#75C9A8' });
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [route, setRoute] = useState<Address[]>([]);
@@ -52,21 +51,26 @@ const App = () => {
   });
 
   const api = async () => {
+    
     if (isValid(searchPostcode)){
-      const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${searchPostcode}?api_key=iddqd`)
+      const postcode = toNormalised(searchPostcode)
+      const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${postcode}?api_key=iddqd`)
       const listAddress = await data.json()
       if (!listAddress.result) {
         setAddresses([])
         return
       }
       setAddresses(listAddress.result)
+
+      fetch(`https://location-delivery.herokuapp.com/api/location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify( listAddress.result )
+      })
     }
 
-
-    // fetch(`http://location.delivery/${searchPostcode}`, {
-    //   method: 'POST',
-    //   body: JSON.stringify(addresses)
-    // })
   }
 
   const routeGenerator = () => {
