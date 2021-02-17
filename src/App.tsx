@@ -2,26 +2,24 @@ import React from 'react';
 import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Menu from '@material-ui/core/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-
 import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
 import MapIcon from '@material-ui/icons/Map';
-
 import { useState } from 'react';
-import { green, red } from '@material-ui/core/colors';
+
+import { isValid } from "postcode";
 
 import {
   Badge,
   InputBase,
   List,
   ListItem,
-  ListItemAvatar,
-  Avatar,
+  Container,
   ListItemText,
   IconButton,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  Tooltip
 } from '@material-ui/core';
 
 interface Address {
@@ -41,20 +39,13 @@ interface Address {
 
 const App = () => {
   const classes = useStyles();
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  const [colorCircle, setColorCircle] = useState({ color: '#4caf50' });
+  const [colorCircle, setColorCircle] = useState({ color: '#75C9A8' });
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [route, setRoute] = useState<Address[]>([]);
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
-  const api = async (event: any) => {
-    if (event.key === 'Enter') {
-
+  const api = async () => {
+    if (isValid(searchPostcode)){
       const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${searchPostcode}?api_key=iddqd`)
       const listAddress = await data.json()
       if (!listAddress.result) {
@@ -64,6 +55,7 @@ const App = () => {
       setAddresses(listAddress.result)
     }
 
+
     // fetch(`http://location.delivery/${searchPostcode}`, {
     //   method: 'POST',
     //   body: JSON.stringify(addresses)
@@ -71,82 +63,96 @@ const App = () => {
   }
 
   const routeGenerator = () => {
-    const locationsBuild: string[] = [];
-    route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
-    locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
+    if(route.length > 0){
+      const locationsBuild: string[] = [];
+      route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
+      locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
+  
+      const allLocations = locationsBuild.join("/")
+  
+      const link = `https://www.google.com/maps/dir/${allLocations}`
+      window.open(link, "_blank")
+    }
+  }
 
-    const allLocations = locationsBuild.join("/")
-
-    var link = `https://www.google.com/maps/dir/${allLocations}`
+  const mapFromAddress = (address: Address) => {
+    const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
     window.open(link, "_blank")
   }
 
   return (
     <div className={classes.grow}>
-      <AppBar position="static">
-        <Toolbar>
+      <AppBar position="fixed">
+        <Container maxWidth="sm">
+          <Toolbar> 
 
-          <div className={classes.search}>
-            <div className={classes.searchIcon} >
-              <SearchIcon />
+            <div className={classes.search}>
+            <Tooltip title="Enter postcode to search">
+              <InputBase
+                placeholder="Search Postcode"
+                classes={{
+                  root: classes.inputRoot,
+                  input: classes.inputInput,
+                }}
+                value={searchPostcode.toUpperCase()}
+                onChange={(e) => setSearchPostcode(e.target.value)} />
+            </Tooltip>
             </div>
 
-            <InputBase
-              placeholder="Search Postcode"
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput,
-              }}
-              value={searchPostcode}
-              onChange={(e) => setSearchPostcode(e.target.value)}
-              onKeyUp={api}
-            />
-
-          </div>
-
-          <IconButton
-            onClick={routeGenerator}
-            aria-label="show 4 new mails" color="inherit">
-            <Badge
-              badgeContent={route.length}
-              showZero
-              color="secondary"
-            >
-              <MapIcon />
-            </Badge>
-          </IconButton>
-
-        </Toolbar>
-      </AppBar>
-      <Menu keepMounted
-        open={isMobileMenuOpen}
-        onClose={handleMobileMenuClose} />
-
-
-      <List className={classes.list}>
-        {addresses.map((address, index) =>
-          <ListItem>
-
-            <IconButton href={`https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`} >
-              <NavigationIcon fontSize="large" />
-            </IconButton>
-
-            <ListItemText
-              primary={address.line_1}
-              secondary={`${address.postcode} | ${address.district} UK`}
-            />
-            <ListItemSecondaryAction>
-              <IconButton edge="end"
-                onClick={() => {
-                  setRoute([...route, address]);
-                  setColorCircle({ color: '#4caf50' })
-                }}>
-                <AddCircle style={colorCircle} />
+            <Tooltip title="Search postcode">
+              <IconButton onClick={api} aria-label="show 4 new mails" color="inherit">
+                <SearchIcon />
               </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>,
-        )}
-      </List>
+            </Tooltip>
+
+            <Tooltip title="Generate route from selected addresses">
+              <IconButton onClick={routeGenerator} aria-label="show 4 new mails" color="inherit">
+                <Badge badgeContent={route.length} showZero color="secondary">
+                  <MapIcon />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+
+
+      <Container maxWidth="sm">
+        <List className={classes.list}>
+
+          {addresses.map((address, index) =>
+            <ListItem>
+
+              <Tooltip title="Map route from address">
+                <IconButton onClick={ () => mapFromAddress(address) }>
+                  <NavigationIcon fontSize="large" />
+                </IconButton>
+              </Tooltip>
+
+              <ListItemText className={classes.listContent}
+                primary={address.line_1}
+                secondary={`${address.postcode} | ${address.district} UK`} />
+
+              <Tooltip title="Add address in route">
+                <IconButton edge="end" style={colorCircle}
+                  onClick={() => {
+                    setRoute([...route, address]);
+                    setColorCircle({ color: '#FFADA0' })
+                  }}>
+                  <AddCircle />
+                </IconButton>
+              </Tooltip>
+
+
+            </ListItem>,
+          )}
+
+        </List>
+      </Container>
+
+      
     </div>
   );
 }
@@ -159,7 +165,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     search: {
       padding: '2px 4px',
-
       position: 'relative',
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
@@ -169,10 +174,6 @@ const useStyles = makeStyles((theme: Theme) =>
       marginRight: theme.spacing(2),
       marginLeft: theme.spacing(1),
       width: '100%',
-      [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(3),
-        width: 'auto',
-      },
     },
 
     iconButton: {
@@ -185,8 +186,11 @@ const useStyles = makeStyles((theme: Theme) =>
     list: {
       padding: theme.spacing(2),
       textAlign: 'center',
+      marginTop: theme.spacing(6),
     },
-
+    listContent: {
+      marginLeft: theme.spacing(5),
+    },
     searchIcon: {
       padding: theme.spacing(0, 2),
       height: '100%',
@@ -201,13 +205,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputInput: {
       padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+      paddingLeft: `calc(1em + ${theme.spacing(1)}px)`,
       transition: theme.transitions.create('width'),
       width: '100%',
-      [theme.breakpoints.up('md')]: {
-        width: '20ch',
-      },
     },
 
   }),
