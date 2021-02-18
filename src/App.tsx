@@ -8,8 +8,7 @@ import NavigationIcon from '@material-ui/icons/Navigation';
 import MapIcon from '@material-ui/icons/Map';
 import MuiAlert from '@material-ui/lab/Alert';
 import { useState } from 'react';
-
-import { isValid, toNormalised } from "postcode";
+import { isValid, sanitize } from './Utils/Util';
 
 import {
   Badge,
@@ -50,10 +49,13 @@ const App = () => {
     horizontal: 'center',
   });
 
+  const getPosition = () => new Promise<GeolocationPosition>((resolve, reject) =>
+    navigator.geolocation.getCurrentPosition(resolve, reject)
+  )
+
   const api = async () => {
-    
-    if (isValid(searchPostcode)){
-      const postcode = toNormalised(searchPostcode)
+    const postcode = sanitize(searchPostcode)
+    if (isValid(postcode)){
       const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${postcode}?api_key=iddqd`)
       const listAddress = await data.json()
       if (!listAddress.result) {
@@ -73,9 +75,11 @@ const App = () => {
 
   }
 
-  const routeGenerator = () => {
+  const routeGenerator = async () => {
     if(route.length > 0){
+      const { coords } = await getPosition();
       const locationsBuild: string[] = [];
+      locationsBuild.push(`${coords.latitude},${coords.longitude}`);
       route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
       locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
   
