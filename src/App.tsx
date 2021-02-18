@@ -62,7 +62,7 @@ const App = () => {
       }
       setAddresses(listAddress.result)
 
-      fetch(`https://location-delivery.herokuapp.com/api/location`, {
+      await fetch(`https://location-delivery.herokuapp.com/api/location`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
