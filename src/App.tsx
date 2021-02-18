@@ -147,7 +147,7 @@ const App = () => {
               </Tooltip>
 
               <ListItemText className={classes.listContent}
-                primary={address.line_1}
+                primary={`${address.line_1} | ${address.line_2}`} 
                 secondary={`${address.postcode} | ${address.district} UK`} />
 
               <Tooltip title="Add address in route">
