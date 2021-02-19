@@ -19,7 +19,13 @@ import {
   ListItemText,
   IconButton,
   Snackbar,
-  Tooltip
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button
 } from '@material-ui/core';
 
 interface Address {
@@ -43,6 +49,8 @@ const App = () => {
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [route, setRoute] = useState<Address[]>([]);
+  const [openDialogRoute, setOpenDialogRoute] = useState(false);
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     vertical: 'top',
@@ -55,7 +63,7 @@ const App = () => {
 
   const api = async () => {
     const postcode = sanitize(searchPostcode)
-    if (isValid(postcode)){
+    if (isValid(postcode)) {
       const data = await fetch(`https://api.ideal-postcodes.co.uk/v1/postcodes/${postcode}?api_key=iddqd`)
       const listAddress = await data.json()
       if (!listAddress.result) {
@@ -69,22 +77,22 @@ const App = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify( listAddress.result )
+        body: JSON.stringify(listAddress.result)
       })
     }
 
   }
 
   const routeGenerator = async () => {
-    if(route.length > 0){
+    if (route.length > 0) {
       const { coords } = await getPosition();
       const locationsBuild: string[] = [];
       locationsBuild.push(`${coords.latitude},${coords.longitude}`);
       route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
       locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
-  
+
       const allLocations = locationsBuild.join("/")
-  
+
       const link = `https://www.google.com/maps/dir/${allLocations}`
       window.open(link, "_blank")
     }
@@ -96,26 +104,44 @@ const App = () => {
   }
 
   const handleClose = () => {
-    setSnackbar({...snackbar, open: false})
+    setSnackbar({ ...snackbar, open: false })
+  }
+
+  const handleCloseDialogRoute = () => {
+    setOpenDialogRoute(false)
+  }
+
+  const handleAdd = (address: Address, index: number) => {
+    if (route.includes(address)) {
+      const ifDeleted = route.filter(a => a !== address)
+      setRoute(ifDeleted)
+      return
+    }
+    if (route.length === 9) {
+      setOpenDialogRoute(true)
+      return
+    }
+    setRoute([...route, address])
+    setSnackbar({ ...snackbar, open: true })
   }
 
   return (
     <div className={classes.grow}>
       <AppBar position="fixed">
         <Container maxWidth="sm">
-          <Toolbar> 
+          <Toolbar>
 
             <div className={classes.search}>
-            <Tooltip title="Enter postcode to search">
-              <InputBase
-                placeholder="Search Postcode"
-                classes={{
-                  root: classes.inputRoot,
-                  input: classes.inputInput,
-                }}
-                value={searchPostcode.toUpperCase()}
-                onChange={(e) => setSearchPostcode(e.target.value)} />
-            </Tooltip>
+              <Tooltip title="Enter postcode to search">
+                <InputBase
+                  placeholder="Search Postcode"
+                  classes={{
+                    root: classes.inputRoot,
+                    input: classes.inputInput,
+                  }}
+                  value={searchPostcode.toUpperCase()}
+                  onChange={(e) => setSearchPostcode(e.target.value)} />
+              </Tooltip>
             </div>
 
             <Tooltip title="Search postcode">
@@ -134,6 +160,24 @@ const App = () => {
 
           </Toolbar>
         </Container>
+        <Dialog
+          open={openDialogRoute}
+          onClose={handleCloseDialogRoute} >
+
+          <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+            Route
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Maximum number of addresses on the route.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialogRoute} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </AppBar>
 
 
@@ -142,35 +186,32 @@ const App = () => {
         <List className={classes.list}>
 
           {addresses.map((address, index) =>
-            <ListItem>
+            <ListItem id={index.toString()}>
 
               <Tooltip title="Map route from address">
-                <IconButton onClick={ () => mapFromAddress(address) }>
+                <IconButton onClick={() => mapFromAddress(address)}>
                   <NavigationIcon fontSize="large" />
                 </IconButton>
               </Tooltip>
 
               <ListItemText className={classes.listContent}
-                primary={`${address.line_1} | ${address.line_2}`} 
+                primary={`${address.line_1} | ${address.line_2}`}
                 secondary={`${address.postcode} | ${address.district} UK`} />
 
               <Tooltip title="Add address in route">
                 <IconButton edge="end"
-                  onClick={() => {
-                    setRoute([...route, address])
-                    setSnackbar({...snackbar, open: true})
-                  }}>
-                  <AddCircle />
+                  onClick={() => handleAdd(address, index)}>
+                  <AddCircle className={route.includes(address) ? classes.green : ''} />
                 </IconButton>
               </Tooltip>
 
 
             </ListItem>,
           )}
- 
+
         </List>
 
-        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} 
+        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
           open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
           <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
             Address added in routes
@@ -179,7 +220,7 @@ const App = () => {
 
       </Container>
 
-      
+
     </div>
   );
 }
@@ -217,6 +258,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     listContent: {
       marginLeft: theme.spacing(5),
+    },
+    green: {
+      color: '#33CC33'
     },
     searchIcon: {
       padding: theme.spacing(0, 2),
