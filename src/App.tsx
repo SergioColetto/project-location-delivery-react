@@ -49,7 +49,10 @@ const App = () => {
   const [searchPostcode, setSearchPostcode] = useState('');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [route, setRoute] = useState<Address[]>([]);
-  const [openDialogRoute, setOpenDialogRoute] = useState(false);
+  const [openDialogRoute, setOpenDialogRoute] = useState({
+    open: false,
+    message: 'Maximum number of addresses on the route.'
+  });
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -85,9 +88,10 @@ const App = () => {
 
   const routeGenerator = async () => {
     if (route.length > 0) {
-      const { coords } = await getPosition();
       const locationsBuild: string[] = [];
-      locationsBuild.push(`${coords.latitude},${coords.longitude}`);
+      // const { coords } = await getPosition();
+      // locationsBuild.push(`${coords.latitude},${coords.longitude}`);
+      locationsBuild.push("");
       route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
       locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
 
@@ -95,7 +99,9 @@ const App = () => {
 
       const link = `https://www.google.com/maps/dir/${allLocations}`
       window.open(link, "_blank")
+      return;
     }
+    setOpenDialogRoute({ message: 'Choose at least one address', open: true })
   }
 
   const mapFromAddress = (address: Address) => {
@@ -108,7 +114,7 @@ const App = () => {
   }
 
   const handleCloseDialogRoute = () => {
-    setOpenDialogRoute(false)
+    setOpenDialogRoute({ ...openDialogRoute, open: false })
   }
 
   const handleAdd = (address: Address, index: number) => {
@@ -118,7 +124,7 @@ const App = () => {
       return
     }
     if (route.length === 9) {
-      setOpenDialogRoute(true)
+      setOpenDialogRoute({ ...openDialogRoute, open: true })
       return
     }
     setRoute([...route, address])
@@ -161,7 +167,7 @@ const App = () => {
           </Toolbar>
         </Container>
         <Dialog
-          open={openDialogRoute}
+          open={openDialogRoute.open}
           onClose={handleCloseDialogRoute} >
 
           <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
@@ -169,7 +175,7 @@ const App = () => {
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Maximum number of addresses on the route.
+              {openDialogRoute.message}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
