@@ -1,3 +1,4 @@
+
 const POSTCODE_REGEX = /^[a-z]{1,2}\d[a-z\d]?\s*\d[a-z]{2}$/i;
 const SPACE_REGEX = /\s+/gi;
 const INCODE_REGEX = /\d[a-z]{2}$/i;

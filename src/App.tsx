@@ -1,24 +1,18 @@
+
 import React from 'react';
 import { fade, makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import SearchIcon from '@material-ui/icons/Search';
-import AddCircle from '@material-ui/icons/AddCircle';
-import NavigationIcon from '@material-ui/icons/Navigation';
 import MapIcon from '@material-ui/icons/Map';
-import MuiAlert from '@material-ui/lab/Alert';
 import { useState } from 'react';
-import { isValid, sanitize } from './Utils/Util';
+import { sanitize, isValid } from './Utils/PostcodeUtils';
 
 import {
   Badge,
   InputBase,
-  List,
-  ListItem,
   Container,
-  ListItemText,
   IconButton,
-  Snackbar,
   Tooltip,
   Dialog,
   DialogTitle,
@@ -27,22 +21,8 @@ import {
   DialogActions,
   Button
 } from '@material-ui/core';
-
-interface Address {
-  building_name: string;
-  building_number: string;
-  country: string;
-  county: string;
-  district: string;
-  latitude: number;
-  line_1: string;
-  line_2: string;
-  line_3: string;
-  longitude: number;
-  post_town: string;
-  postcode: string;
-}
-
+import { AddressList } from './components/AddressList';
+import { Address } from './interfaces/Address';
 
 const App = () => {
   const classes = useStyles();
@@ -52,12 +32,6 @@ const App = () => {
   const [openDialogRoute, setOpenDialogRoute] = useState({
     open: false,
     message: 'Maximum number of addresses on the route.'
-  });
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    vertical: 'top',
-    horizontal: 'center',
   });
 
   const getPosition = () => new Promise<GeolocationPosition>((resolve, reject) =>
@@ -104,15 +78,6 @@ const App = () => {
     setOpenDialogRoute({ message: 'Choose at least one address', open: true })
   }
 
-  const mapFromAddress = (address: Address) => {
-    const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
-    window.open(link, "_blank")
-  }
-
-  const handleClose = () => {
-    setSnackbar({ ...snackbar, open: false })
-  }
-
   const handleCloseDialogRoute = () => {
     setOpenDialogRoute({ ...openDialogRoute, open: false })
   }
@@ -128,7 +93,7 @@ const App = () => {
       return
     }
     setRoute([...route, address])
-    setSnackbar({ ...snackbar, open: true })
+    // setSnackbar({ ...snackbar, open: true })
   }
 
   return (
@@ -187,50 +152,15 @@ const App = () => {
       </AppBar>
 
 
-
-      <Container maxWidth="sm">
-        <List className={classes.list}>
-
-          {addresses.map((address, index) =>
-            <ListItem id={index.toString()}>
-
-              <Tooltip title="Map route from address">
-                <IconButton onClick={() => mapFromAddress(address)}>
-                  <NavigationIcon fontSize="large" />
-                </IconButton>
-              </Tooltip>
-
-              <ListItemText className={classes.listContent}
-                primary={`${address.line_1} | ${address.line_2}`}
-                secondary={`${address.postcode} | ${address.district} UK`} />
-
-              <Tooltip title="Add address in route">
-                <IconButton edge="end"
-                  onClick={() => handleAdd(address, index)}>
-                  <AddCircle className={route.includes(address) ? classes.green : ''} />
-                </IconButton>
-              </Tooltip>
-
-
-            </ListItem>,
-          )}
-
-        </List>
-
-        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
-          <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
-            Address added in routes
-          </MuiAlert>
-        </Snackbar>
-
-      </Container>
-
+      <AddressList 
+        addresses={addresses}
+        route={route}
+        handleAdd={handleAdd} />
+      
 
     </div>
   );
 }
-
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
