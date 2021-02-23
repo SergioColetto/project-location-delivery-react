@@ -12,20 +12,21 @@ import {
   Tooltip,
   Theme,
   makeStyles,
-  createStyles,
-  fade
+  createStyles
 } from '@material-ui/core';
 import { Address } from '../interfaces/Address';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { searchByPostcode } from '../api/api';
 
 interface Props {
-  addresses: Address[];
+  postcode: string;
   route: Address[];
   handleAdd: Function
 }
 
-export const AddressList = ({ addresses, route, handleAdd }: Props) => {
+export const AddressList = ({ postcode, route, handleAdd }: Props) => {
   const classes = useStyles();
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     vertical: 'top',
@@ -41,44 +42,48 @@ export const AddressList = ({ addresses, route, handleAdd }: Props) => {
     window.open(link, "_blank")
   }
 
+  useEffect(()=>{
+    searchByPostcode(postcode, setAddresses)
+  }, [])
+
   return(
     <Container maxWidth="sm">
-        <List className={classes.list}>
+      <List className={classes.list}>
 
-          {addresses.map((address, index) =>
-            <ListItem id={index.toString()}>
+        {addresses.map((address, index) =>
+          <ListItem id={index.toString()}>
 
-              <Tooltip title="Map route from address">
-                <IconButton onClick={() => mapFromAddress(address)}>
-                  <NavigationIcon fontSize="large" />
-                </IconButton>
-              </Tooltip>
+            <Tooltip title="Map route from address">
+              <IconButton onClick={() => mapFromAddress(address)}>
+                <NavigationIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
 
-              <ListItemText className={classes.listContent}
-                primary={`${address.line_1} | ${address.line_2}`}
-                secondary={`${address.postcode} | ${address.district} UK`} />
+            <ListItemText className={classes.listContent}
+              primary={`${address.line_1} | ${address.line_2}`}
+              secondary={`${address.postcode} | ${address.district} UK`} />
 
-              <Tooltip title="Add address in route">
-                <IconButton edge="end"
-                  onClick={() => handleAdd(address, index)}>
-                  <AddCircle className={route.includes(address) ? classes.green : ''} />
-                </IconButton>
-              </Tooltip>
+            <Tooltip title="Add address in route">
+              <IconButton edge="end"
+                onClick={() => handleAdd(address, index)}>
+                <AddCircle className={route.includes(address) ? classes.green : ''} />
+              </IconButton>
+            </Tooltip>
 
 
-            </ListItem>,
-          )}
+          </ListItem>,
+        )}
 
-        </List>
+      </List>
 
-        <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
-          <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
-            Address added in routes
-          </MuiAlert>
-        </Snackbar>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
+        <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
+          Address added in routes
+        </MuiAlert>
+      </Snackbar>
 
-      </Container>
+    </Container>
 
   )
 }
