@@ -16,17 +16,16 @@ import {
 } from '@material-ui/core';
 import { Address } from '../interfaces/Address';
 import { useEffect, useState } from 'react';
-import { searchByPostcode } from '../api/api';
 
 interface Props {
-  postcode: string;
+  addresses: Address[];
   route: Address[];
   handleAdd: Function
 }
 
-export const AddressList = ({ postcode, route, handleAdd }: Props) => {
+export const AddressList = ({ addresses, route, handleAdd }: Props) => {
   const classes = useStyles();
-  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressList, setAddressList] = useState<Address[]>([])
   const [snackbar, setSnackbar] = useState({
     open: false,
     vertical: 'top',
@@ -43,14 +42,14 @@ export const AddressList = ({ postcode, route, handleAdd }: Props) => {
   }
 
   useEffect(()=>{
-    searchByPostcode(postcode, setAddresses)
-  }, [])
+    setAddressList(addresses)
+  },[])
 
   return(
     <Container maxWidth="sm">
       <List className={classes.list}>
 
-        {addresses.map((address, index) =>
+        {addressList.map((address, index) =>
           <ListItem id={index.toString()}>
 
             <Tooltip title="Map route from address">
@@ -70,10 +69,9 @@ export const AddressList = ({ postcode, route, handleAdd }: Props) => {
               </IconButton>
             </Tooltip>
 
-
           </ListItem>,
         )}
-
+        
       </List>
 
       <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -84,7 +82,6 @@ export const AddressList = ({ postcode, route, handleAdd }: Props) => {
       </Snackbar>
 
     </Container>
-
   )
 }
 

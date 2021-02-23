@@ -1,44 +1,26 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { useState } from 'react';
 import { Address } from './interfaces/Address';
 import { AddressList } from './components/AddressList';
 import { SearchBar } from './components/SearchBar';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
+import { get } from './api/api';
+import { RouteList } from './components/RouteList';
 
 const App = () => {
   const [route, setRoute] = useState<Address[]>([]);
-  const [postcode, setPostcode] = useState('');
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [openDialogRoute, setOpenDialogRoute] = useState({
     open: false,
     message: 'Maximum number of addresses on the route.'
   });
 
-  const searchByPostcode = () => console.log(postcode)
-
-// const api = async () => {
-  //   const postcode = sanitize(searchPostcode)
-  //   if (isValid(postcode)) {
-  //     const data = await fetch('')
-  //     const listAddress = await data.json()
-  //     if (!listAddress.result) {
-  //       setAddresses([])
-  //       return
-  //     }
-  //     setAddresses(listAddress.result)
-
-  //     await fetch(`https://location-delivery.herokuapp.com/api/location`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify(listAddress.result)
-  //     })
-  //   }
-
-  // }
-
+  const searchByPostcode = async ( postcode: string ) => {
+    const listAddress = await get(postcode)
+    setAddresses( listAddress )
+  }
 
   const handleCloseDialogRoute = () => {
     setOpenDialogRoute({ ...openDialogRoute, open: false })
@@ -59,44 +41,46 @@ const App = () => {
 
   return (
     <Router>
-      <SearchBar 
-        postcode={postcode}
-        setPostcode={setPostcode} 
+      <SearchBar
+        route={route} 
         searchPostcode={searchByPostcode} />
         
       <Switch>
-        <Route path="/address">
+        <Route path="/">
           <AddressList 
-            postcode={postcode}
-            route={route}
-            handleAdd={handleAdd} />
+              addresses={addresses}
+              route={route}
+              handleAdd={handleAdd} />
 
         </Route>
-        
-        <Dialog
-          open={openDialogRoute.open}
-          onClose={handleCloseDialogRoute} >
-
-          <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-            Route
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {openDialogRoute.message}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialogRoute} color="primary">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <Route path="/route">
+          <RouteList 
+            route={route}
+            handleRemove={handleAdd} />
+        </Route>
       </Switch>
+
+      <Dialog
+        open={openDialogRoute.open}
+        onClose={handleCloseDialogRoute} >
+
+        <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+          Route
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {openDialogRoute.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialogRoute} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Router>
   );
 }
-
-
-
 
 export default App;

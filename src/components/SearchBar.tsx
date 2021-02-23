@@ -4,47 +4,25 @@ import Toolbar from '@material-ui/core/Toolbar';
 import SearchIcon from '@material-ui/icons/Search';
 import MapIcon from '@material-ui/icons/Map';
 import { useState } from 'react';
-import { sanitize, isValid } from './../Utils/PostcodeUtils';
+import { Address } from '../interfaces/Address';
 
 import {
   InputBase,
   Container,
   IconButton,
-  Tooltip
+  Tooltip,
+  Badge
 } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 
 interface Props {
-  postcode: string;
-  setPostcode: Function;
+  route: Address[];
   searchPostcode: Function;
 }
 
-export const SearchBar = ({ postcode, setPostcode, searchPostcode }: Props ) => {
+export const SearchBar = ({ searchPostcode, route }: Props ) => {
   const classes = useStyles();
-  // const [searchPostcode, setSearchPostcode] = useState('');
-
-  // const getPosition = () => new Promise<GeolocationPosition>((resolve, reject) =>
-  //   navigator.geolocation.getCurrentPosition(resolve, reject)
-  // )
-
-  // const routeGenerator = async () => {
-  //   if (route.length > 0) {
-  //     const locationsBuild: string[] = [];
-  //     // const { coords } = await getPosition();
-  //     // locationsBuild.push(`${coords.latitude},${coords.longitude}`);
-  //     locationsBuild.push("");
-  //     route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
-  //     locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
-
-  //     const allLocations = locationsBuild.join("/")
-
-  //     const link = `https://www.google.com/maps/dir/${allLocations}`
-  //     window.open(link, "_blank")
-  //     return;
-  //   }
-  //   setOpenDialogRoute({ message: 'Choose at least one address', open: true })
-  // }
+  const [postcode, setPostcode] = useState('');
 
   return(
     <div className={classes.grow}>
@@ -66,20 +44,20 @@ export const SearchBar = ({ postcode, setPostcode, searchPostcode }: Props ) => 
             </div>
 
             <Tooltip title="Search postcode">
-                <IconButton  aria-label="show 4 new mails" color="inherit">
-                  <Link to='/address'>
+                <IconButton onClick={() => searchPostcode(postcode)} aria-label="show 4 new mails" color="inherit">
                     <SearchIcon />
-                  </Link>
                 </IconButton>
             </Tooltip>
 
-            {/* <Tooltip title="Generate route from selected addresses">
-              <IconButton onClick={routeGenerator} aria-label="show 4 new mails" color="inherit">
-                <Badge badgeContent={route.length} showZero color="secondary">
-                  <MapIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip> */}
+            <Tooltip title="Generate route from selected addresses">
+              <Link to='/route' aria-label="show 4 new mails" color="inherit">
+                <IconButton >
+                  <Badge badgeContent={route.length} showZero color="secondary">
+                    <MapIcon />
+                  </Badge>
+                </IconButton>
+              </Link>
+            </Tooltip>
 
           </Toolbar>
         </Container>

@@ -2,9 +2,9 @@
     "version": "0.1.0",
     "configurations": [
         {
-            "type": "browser-preview",
+            "type": "pwa-chrome",
             "request": "launch",
-            "name": "Browser Preview: Launch",
+            "name": "chrome",
             "url": "http://localhost:3000"
         }
     ]
