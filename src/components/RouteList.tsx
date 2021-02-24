@@ -7,11 +7,11 @@ import {
   Container,
   ListItemText,
   IconButton,
-  Snackbar,
   Tooltip,
   Theme,
   makeStyles,
-  createStyles
+  createStyles,
+  Button
 } from '@material-ui/core';
 import { Address } from '../interfaces/Address';
 import { useEffect, useState } from 'react';
@@ -29,13 +29,21 @@ export const RouteList = ({ route, handleRemove }: Props) => {
     navigator.geolocation.getCurrentPosition(resolve, reject)
   )
 
+  const remove = (address: Address, index: number) => {
+    if (routeList.includes(address)) {
+      const ifDeleted = route.filter(a => a !== address)
+      setRouteList(ifDeleted)
+      handleRemove(address, index)
+    }
+  }
+  
   const routeGenerator = async () => {
-    if (route.length > 0) {
+    if (routeList.length > 0) {
       const locationsBuild: string[] = [];
       // const { coords } = await getPosition();
       // locationsBuild.push(`${coords.latitude},${coords.longitude}`);
       locationsBuild.push("");
-      route.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
+      routeList.forEach(address => locationsBuild.push(`${address.latitude},${address.longitude}`))
       locationsBuild.push(`@${locationsBuild[locationsBuild.length - 1]},14z/`)
 
       const allLocations = locationsBuild.join("/")
@@ -44,30 +52,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
       window.open(link, "_blank")
       return;
     }
-
   }
-
-  // const api = async () => {
-  //   const postcode = sanitize(searchPostcode)
-  //   if (isValid(postcode)) {
-  //     const data = await fetch('')
-  //     const listAddress = await data.json()
-  //     if (!listAddress.result) {
-  //       setAddresses([])
-  //       return
-  //     }
-  //     setAddresses(listAddress.result)
-
-  //     await fetch(`https://location-delivery.herokuapp.com/api/location`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify(listAddress.result)
-  //     })
-  //   }
-
-  // }
 
   useEffect(()=>{
     setRouteList( route )
@@ -76,7 +61,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
   return(
     <Container maxWidth="sm">
       <List className={classes.list}>
-        Route List
+
         {routeList.map((address, index) =>
           <ListItem id={index.toString()}>
 
@@ -92,7 +77,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
 
             <Tooltip title="Add address in route">
               <IconButton edge="end"
-                onClick={() => handleRemove(address, index)}>
+                onClick={() => remove(address, index)}>
                 <AddCircle className={classes.green} />
               </IconButton>
             </Tooltip>
@@ -100,6 +85,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
           </ListItem>,
         )}
       </List>
+      { routeList.length > 0 ? <Button onClick={routeGenerator} >Generate Router in Google Maps</Button>: null }
     </Container>
   )
 }

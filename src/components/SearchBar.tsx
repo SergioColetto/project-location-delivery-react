@@ -44,14 +44,16 @@ export const SearchBar = ({ searchPostcode, route }: Props ) => {
             </div>
 
             <Tooltip title="Search postcode">
-                <IconButton onClick={() => searchPostcode(postcode)} aria-label="show 4 new mails" color="inherit">
+              <Link to="/addresses" onClick={() => searchPostcode(postcode)} className={classes.inputRoot}>
+                <IconButton aria-label="show 4 new mails" color="inherit">
                     <SearchIcon />
                 </IconButton>
+              </Link>
             </Tooltip>
 
             <Tooltip title="Generate route from selected addresses">
-              <Link to='/route' aria-label="show 4 new mails" color="inherit">
-                <IconButton >
+              <Link to='/route'>
+                <IconButton className={classes.white}>
                   <Badge badgeContent={route.length} showZero color="secondary">
                     <MapIcon />
                   </Badge>
@@ -68,6 +70,7 @@ export const SearchBar = ({ searchPostcode, route }: Props ) => {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    
     grow: {
       flexGrow: 1,
     },
@@ -77,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
       '&:hover': {
-        backgroundColor: fade(theme.palette.common.white, 0.25),
+        backgroundColor: fade(theme.palette.common.white, 0.15),
       },
       marginRight: theme.spacing(2),
       marginLeft: theme.spacing(1),
@@ -101,6 +104,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     green: {
       color: '#33CC33'
+    },
+    white: {
+      color: '#FFFFFF'
     },
     searchIcon: {
       padding: theme.spacing(0, 2),
