@@ -1,7 +1,6 @@
 import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
 import { Address } from '../interfaces/Address';
-import { Link } from 'react-router-dom';
 
 import {
   List,
@@ -9,7 +8,6 @@ import {
   Container,
   ListItemText,
   IconButton,
-  Snackbar,
   Tooltip,
   Theme,
   makeStyles,

@@ -1,6 +1,3 @@
-import AddCircle from '@material-ui/icons/AddCircle';
-import NavigationIcon from '@material-ui/icons/Navigation';
-
 import {
   List,
   ListItem,

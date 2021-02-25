@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Address } from './interfaces/Address';
 import { SearchBar } from './components/SearchBar';
 import { Button, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, makeStyles, Snackbar, Theme } from '@material-ui/core';
-import { get } from './api/api';
+import { get } from './api/Services';
 import { LatLng } from 'leaflet';
 import { AddressList } from './components/AddressList';
 import { MapRender } from './components/MapRender';
@@ -54,7 +54,11 @@ const App = () => {
       return
     }
     if (route.length === 9) {
-      setOpenDialogRoute({ ...openDialogRoute, open: true })
+      setOpenDialogRoute({
+        open: true,
+        title:'Route',
+        message: 'Maximum number of addresses on the route.'
+      })
       return
     }
     setRoute([...route, address])

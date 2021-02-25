@@ -1,7 +1,7 @@
 import {  makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import { LatLng } from 'leaflet';
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, MapConsumer } from 'react-leaflet'
+import React from 'react';
+import { MapContainer } from 'react-leaflet'
 
 interface Props {
   position: LatLng;
