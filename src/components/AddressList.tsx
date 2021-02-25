@@ -1,8 +1,6 @@
 import AddCircle from '@material-ui/icons/AddCircle';
 import NavigationIcon from '@material-ui/icons/Navigation';
-import MuiAlert from '@material-ui/lab/Alert';
 import { Address } from '../interfaces/Address';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
@@ -21,35 +19,22 @@ import {
 interface Props {
   addresses: Address[];
   route: Address[];
-  handleAdd: Function
+  routeAdd: Function,
+  mapFromAddress: Function,
 }
 
-export const AddressList = ({ addresses, route, handleAdd }: Props) => {
+export const AddressList = ({ addresses, route, routeAdd, mapFromAddress }: Props) => {
   const classes = useStyles();
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    vertical: 'top',
-    horizontal: 'center',
-  });
-
-  const handleClose = () => {
-    setSnackbar({ ...snackbar, open: false })
-  }
-
-  const mapFromAddress = (address: Address) => {
-    // const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
-    // window.open(link, "_blank")
-  }
 
   return(
     <Container maxWidth="sm">
       <List className={classes.list}>
 
         {addresses.map((address, index) =>
-          <ListItem id={index.toString()}>
+          <ListItem key={index.toString()}>
 
             <Tooltip title="Map route from address">
-              <Link to="/address" onClick={() => handleAdd(address)}>
+              <Link to="/map" onClick={() => mapFromAddress(address)}>
                 <IconButton>
                   <NavigationIcon fontSize="large" />
                 </IconButton>
@@ -62,7 +47,7 @@ export const AddressList = ({ addresses, route, handleAdd }: Props) => {
 
             <Tooltip title="Add address in route">
               <IconButton edge="end"
-                  onClick={() => handleAdd(address, index)}>
+                  onClick={() => routeAdd(address, index)}>
                     
                 <AddCircle className={route.includes(address) ? classes.green : ''} />
               </IconButton>
@@ -70,16 +55,7 @@ export const AddressList = ({ addresses, route, handleAdd }: Props) => {
 
           </ListItem>,
         )}
-        
       </List>
-
-      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
-        <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
-          Address added in routes
-        </MuiAlert>
-      </Snackbar>
-
     </Container>
   )
 }
