@@ -18,10 +18,10 @@ import { useEffect, useState } from 'react';
 
 interface Props {
   route: Address[];
-  handleRemove: Function
+  routeRemove: Function
 }
 
-export const RouteList = ({ route, handleRemove }: Props) => {
+export const RouteList = ({ route, routeRemove }: Props) => {
   const classes = useStyles();
   const [routeList, setRouteList] = useState<Address[]>([])
 
@@ -33,7 +33,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
     if (routeList.includes(address)) {
       const ifDeleted = route.filter(a => a !== address)
       setRouteList(ifDeleted)
-      handleRemove(address, index)
+      routeRemove(address, index)
     }
   }
   
@@ -63,7 +63,7 @@ export const RouteList = ({ route, handleRemove }: Props) => {
       <List className={classes.list}>
 
         {routeList.map((address, index) =>
-          <ListItem id={index.toString()}>
+          <ListItem key={index.toString()}>
 
             <Tooltip title="Map route from address">
               <IconButton >

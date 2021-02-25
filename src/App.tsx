@@ -4,24 +4,34 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { useState } from 'react';
 import { Address } from './interfaces/Address';
 import { SearchBar } from './components/SearchBar';
-import { Button, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, makeStyles, Theme } from '@material-ui/core';
+import { Button, createStyles, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, makeStyles, Snackbar, Theme } from '@material-ui/core';
 import { get } from './api/api';
 import { LatLng } from 'leaflet';
 import { AddressList } from './components/AddressList';
 import { MapRender } from './components/MapRender';
 import { RouteList } from './components/RouteList';
+import MuiAlert from '@material-ui/lab/Alert';
 
 const App = () => {
   const classes = useStyles();
   const [route, setRoute] = useState<Address[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [position, setPosition] = useState(new LatLng(0,0));
+    const [snackbar, setSnackbar] = useState({
+    open: false,
+    vertical: 'top',
+    horizontal: 'center',
+  });
   
   const [openDialogRoute, setOpenDialogRoute] = useState({
     open: false,
     title:'Route',
     message: 'Maximum number of addresses on the route.'
   });
+
+  const handleClose = () => {
+    setSnackbar({ ...snackbar, open: false })
+  }
 
   const searchByPostcode = async ( postcode: string ) => {
     try {
@@ -38,20 +48,28 @@ const App = () => {
     setOpenDialogRoute({ ...openDialogRoute, open: false })
   }
 
-  const handleAdd = (address: Address, index: number) => {
+  const routeAdd = (address: Address, index: number) => {
+    if (route.includes(address)) {
+      routeRemove(address, index)
+      return
+    }
     if (route.length === 9) {
       setOpenDialogRoute({ ...openDialogRoute, open: true })
       return
     }
     setRoute([...route, address])
-    setPosition(new LatLng(address.latitude, address.longitude))
+    setSnackbar({ ...snackbar, open: true })
   }
 
-  const handleRemove = (address: Address, index: number) => {
-    if (route.includes(address)) {
-      const ifDeleted = route.filter(a => a !== address)
-      setRoute(ifDeleted)
-    }
+  const routeRemove = (address: Address, index: number) => {
+    const ifDeleted = route.filter(a => a !== address)
+    setRoute(ifDeleted)
+  }
+
+  const mapFromAddress = (address: Address) => {
+    // const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
+    // window.open(link, "_blank")
+    setPosition(new LatLng(address.latitude, address.longitude))
   }
 
   useEffect(()=>{
@@ -70,7 +88,8 @@ const App = () => {
           <AddressList 
               addresses={addresses}
               route={route}
-              handleAdd={handleAdd} />
+              routeAdd={routeAdd}
+              mapFromAddress={mapFromAddress} />
         </Route>
 
         <Route path="/map">
@@ -80,7 +99,7 @@ const App = () => {
         <Route path="/route">
           <RouteList 
             route={route}
-            handleRemove={handleRemove} />
+            routeRemove={routeRemove} />
         </Route>
 
       </Switch>
@@ -103,7 +122,12 @@ const App = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={snackbar.open} autoHideDuration={1000} onClose={handleClose}>
+        <MuiAlert elevation={6} variant="filled" onClose={handleClose} severity="success">
+          Address added in routes
+        </MuiAlert>
+      </Snackbar>
     </Router>
   );
 }
