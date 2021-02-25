@@ -34,11 +34,9 @@ export const AddressList = ({ addresses, route, routeAdd, mapFromAddress }: Prop
           <ListItem key={index.toString()}>
 
             <Tooltip title="Map route from address">
-              <Link to="/map" onClick={() => mapFromAddress(address)}>
-                <IconButton>
-                  <NavigationIcon fontSize="large" />
-                </IconButton>
-              </Link>
+              <IconButton onClick={() => mapFromAddress(address)}>
+                <NavigationIcon fontSize="large" />
+              </IconButton>
             </Tooltip>
 
             <ListItemText className={classes.listContent}

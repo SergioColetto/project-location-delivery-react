@@ -14,7 +14,8 @@ import {
   Button
 } from '@material-ui/core';
 import { Address } from '../interfaces/Address';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { DragIndicator, RemoveCircle } from '@material-ui/icons';
 
 interface Props {
   route: Address[];
@@ -64,28 +65,29 @@ export const RouteList = ({ route, routeRemove }: Props) => {
 
         {routeList.map((address, index) =>
           <ListItem key={index.toString()}>
-
-            <Tooltip title="Map route from address">
-              <IconButton >
-                <NavigationIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
+            <DragIndicator fontSize="large" />
 
             <ListItemText className={classes.listContent}
               primary={`${address.line_1} | ${address.line_2}`}
               secondary={`${address.postcode} | ${address.district} UK`} />
 
-            <Tooltip title="Add address in route">
+            <Tooltip title="Remove address">
               <IconButton edge="end"
                 onClick={() => remove(address, index)}>
-                <AddCircle className={classes.green} />
+                <RemoveCircle />
               </IconButton>
             </Tooltip>
 
           </ListItem>,
         )}
       </List>
-      { routeList.length > 0 ? <Button onClick={routeGenerator} >Generate Router in Google Maps</Button>: null }
+      { routeList.length > 0 ? 
+        <Button variant='contained'
+          color='primary'
+          onClick={routeGenerator} 
+        >
+          Generate Router in Google Maps
+        </Button> : null }
     </Container>
   )
 }
