@@ -11,6 +11,7 @@ import { AddressList } from './components/AddressList';
 import { MapRender } from './components/MapRender';
 import { RouteList } from './components/RouteList';
 import MuiAlert from '@material-ui/lab/Alert';
+import { mapFromAddress } from './Utils/LinkGeneratorUtils';
 
 const App = () => {
   const classes = useStyles();
@@ -70,12 +71,6 @@ const App = () => {
     setRoute(ifDeleted)
   }
 
-  const mapFromAddress = (address: Address) => {
-    const link = `https://www.google.com/maps/place/${address.latitude},${address.longitude}/data=!3m1!4b1!4m5!3m4!1s0x0:0x0!8m2!3d${address.latitude}!4d${address.longitude}`
-    window.open(link, "_blank")
-    // setPosition(new LatLng(address.latitude, address.longitude))
-  }
-
   useEffect(()=>{
     setAddresses(addresses)
     setRoute(route)
@@ -105,7 +100,6 @@ const App = () => {
             route={route}
             routeRemove={routeRemove} />
         </Route>
-
       </Switch>
 
       <Dialog

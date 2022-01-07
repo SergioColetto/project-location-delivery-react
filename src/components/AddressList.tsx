@@ -11,8 +11,11 @@ import {
   Tooltip,
   Theme,
   makeStyles,
-  createStyles
+  createStyles,
+  Button
 } from '@material-ui/core';
+import { get } from '../api/Services';
+import { mapFromAddress } from '../Utils/LinkGeneratorUtils';
 
 interface Props {
   addresses: Address[];
@@ -21,7 +24,23 @@ interface Props {
   mapFromAddress: Function,
 }
 
-export const AddressList = ({ addresses, route, routeAdd, mapFromAddress }: Props) => {
+const routeFromAddressJustEat = async () => {
+  try {
+      const clipboard = await navigator.clipboard.readText();
+      const address = clipboard.split(',');
+      const postcode = address[address.length -1];
+      const line1 = address[0];
+      const listAddress: Address[] = await get(postcode);
+      const match = listAddress.filter((e) => {
+        return e.line_1 === line1;
+      });
+      mapFromAddress(match[0])
+    } catch( e )  {
+      
+    }
+  }
+
+export const AddressList = ({ addresses, route, routeAdd }: Props) => {
   const classes = useStyles();
 
   return(
@@ -52,6 +71,13 @@ export const AddressList = ({ addresses, route, routeAdd, mapFromAddress }: Prop
           </ListItem>,
         )}
       </List>
+      <Button 
+        variant='contained' 
+        color='primary' 
+        onClick={routeFromAddressJustEat}
+      >
+          Just Eat
+      </Button>
     </Container>
   )
 }

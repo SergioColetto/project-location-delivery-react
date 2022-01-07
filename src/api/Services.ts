@@ -1,10 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { Address } from '../interfaces/Address';
-import { isValid } from '../Utils/PostcodeUtils';
+import { isValid, sanitize } from '../Utils/PostcodeUtils';
 
-export const get = async ( postcode: string ) => {
+export const get = async ( value: string ) => {
 
   try {
+    const postcode = sanitize(value);
     if(!isValid(postcode))
       throw { message: 'Invalid Postcode!' }
 
